@@ -1,8 +1,17 @@
+Revision history for Perl extension Pvm.
+
+1.0 to 1.2
+----------
+Reimplement in a new xs shell so it will compile
+and test OK on Perl 5.0005 
+Denis P. Leconte
+
+
 1.0 to 1.1
 ----------
 1, Parallel::Pvm::spawn now accepts argv argument
 
-2, Parallel::Pvm::notify accepts "cnt" argument 
+2, Parallel::Pvm::notify accepts "cnt" argument
    for PvmHostAdd
 
 3, Parallel::Pvm::recv_notify correctly receives

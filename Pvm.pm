@@ -12,7 +12,8 @@ require AutoLoader;
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
-@EXPORT = qw(
+@EXPORT = qw
+(
 	PVM_BYTE
 	PVM_CPLX
 	PVM_DCPLX
@@ -93,26 +94,32 @@ require AutoLoader;
 	PvmTraceTid
 );
 
-$VERSION = '1.1';
+$VERSION = '1.2';
 
-sub AUTOLOAD {
+sub AUTOLOAD 
+{
     # This AUTOLOAD is used to 'autoload' constants from the constant()
     # XS function.  If a constant is not found then control is passed
     # to the AUTOLOAD in AutoLoader.
 
     my $constname;
     ($constname = $AUTOLOAD) =~ s/.*:://;
+    croak "& not defined" if $constname eq 'constant';
     my $val = constant($constname, @_ ? $_[0] : 0);
-    if ($! != 0) {
-	if ($! =~ /Invalid/) {
+    if ($! != 0) 
+    {
+	if ($! =~ /Invalid/) 
+        {
 	    $AutoLoader::AUTOLOAD = $AUTOLOAD;
 	    goto &AutoLoader::AUTOLOAD;
 	}
-	else {
+	else 
+        {
 		croak "Your vendor has not defined Parallel::Pvm macro $constname";
 	}
     }
-    eval "sub $AUTOLOAD { $val }";
+    no strict 'refs';
+    *$AUTOLOAD = sub () { $val };
     goto &$AUTOLOAD;
 }
 
@@ -883,10 +890,12 @@ Unpacks the active receive message buffer.  Eg.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Edward Walker, edward@nsrc.nus.sg,
 National Supercomputing Research Centre, Singapore
+
+Denis Leconte, denis_leconte@geocities.com 
 
 =head1 SEE ALSO
 
