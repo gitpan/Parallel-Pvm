@@ -1,5 +1,13 @@
 Revision history for Perl extension Pvm.
 
+1.2 to 1.2.1
+----------
+Debug for proper compilation under Perl 5.6.0.
+Thanks to Florian Frank <flori@neopoly.de>
+for the patch.
+Denis P. Leconte
+
+
 1.0 to 1.2
 ----------
 Reimplement in a new xs shell so it will compile

@@ -736,7 +736,7 @@ spawn(task,ntask,flag=PvmTaskDefault,where="",argvRef=0)
     for (i = 0; i < argc; i++)
     {
       if ( a = av_fetch( av, i, 0) )
-        argv[i] = (char *) SvPV( *a, na );
+        argv[i] = (char *) SvPV( *a, PL_na );
     }
   }
  
@@ -784,7 +784,7 @@ psend(tid,tag,...)
      croak("Usage: Parallel::Pvm::pack(@argv)");
   for(i=2;i<items;i++)
   {
-    po = (char *)SvPV(ST(i),na);
+    po = (char *)SvPV(ST(i), PL_na);
     if ( i == 2 ) 
     {
       str = buffer_string(po,1);
@@ -947,7 +947,7 @@ pack(...)
     croak("Usage: Parallel::Pvm::pack(@argv)");
   for (i=0;i<items;i++)
   {
-    po = (char *)SvPV(ST(i),na);
+    po = (char *)SvPV(ST(i), PL_na);
     if ( i == 0 ) 
     {
       str = buffer_string(po,1);
@@ -1098,7 +1098,7 @@ addhosts(...)
     croak("Usage: Parallel::Pvm::pvm_addhosts(host_list)");
   for (i=0;i<items;i++)
   {
-    hosts[i] = (char *)SvPV(ST(i),na);
+    hosts[i] = (char *)SvPV(ST(i), PL_na);
   }
   info = pvm_addhosts(hosts,items,infos);
   XPUSHs(sv_2mortal(newSViv(info)));  
@@ -1121,7 +1121,7 @@ delhosts(...)
     croak("Usage: Parallel::Pvm::pvm_delhosts(host_list)");
   for (i=0;i<items;i++)
   {
-    hosts[i] = (char *)SvPV(ST(i),na);
+    hosts[i] = (char *)SvPV(ST(i), PL_na);
   }
   info = pvm_delhosts(hosts,items,infos);
   XPUSHs(sv_2mortal(newSViv(info)));  

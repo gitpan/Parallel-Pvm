@@ -94,7 +94,7 @@ require AutoLoader;
 	PvmTraceTid
 );
 
-$VERSION = '1.2';
+$VERSION = '1.2.1';
 
 sub AUTOLOAD 
 {

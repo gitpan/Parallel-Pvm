@@ -12,7 +12,7 @@ Email: denis_leconte@geocities.com
 WWW: http://www.geocities.com/denis_leconte
 
 ---------- ORIGINAL COPYRIGHT NOTICE ----------
-Copyright (c) 1996 Edward Walker (c) 2000 Denis Leconte. 
+Copyright (c) 1996 Edward Walker (c) 2000,2001 Denis Leconte. 
 All rights reserved.
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
@@ -37,8 +37,8 @@ or greater.
 Once all the preliminaries have been done, the installation
 sequence is as follows:
 
-        tar xvf Parallel-Pvm-1.2.tar
-        cd Parallel-Pvm-1.2
+        tar xvf Parallel-Pvm-1.2.1.tar
+        cd Parallel-Pvm-1.2.1
 
 Have a look into Makefile.PL to see if you have to make any
 changes.  Afterwhich do
