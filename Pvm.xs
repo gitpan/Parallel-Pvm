@@ -23,6 +23,7 @@ extern "C" {
 #define INTEGER         2
 #define DOUBLE          3
  
+static char g_buffer[MAXSTR];
 static SV *recvf_callback = (SV *)NULL;
 static int (*olmatch)();
 
@@ -118,23 +119,22 @@ int must_be_double=0;
 static char *
 buffer_string( char *str, int new_flag )
 {
-static int bufsize;
-static char *buf ;
+static int cnt;
+int i;
  
    if ( new_flag ){
-      bufsize = 1;
-      free(buf);
-      buf = (char *)calloc(strlen(str)+1,sizeof(char));
-      buf[0] = '\0';
-      bufsize = (strlen(str)+1)*sizeof(char);
-      sprintf(buf,"%s", str );
+      cnt=0;
+      for (i=0;str[i] && cnt<MAXSTR-1;i++) g_buffer[cnt++] = str[i];
+      if (cnt == MAXSTR-1) croak("Warning: message truncated. Try increasing MAXSTR");
+      g_buffer[cnt] = '\0';
    }else{
-      bufsize += (strlen(str)+1)*sizeof(char);
-      buf = (char *)realloc(buf,bufsize);
       /* use vertical tab as token separator */
-      sprintf(buf,"%s\v%s",buf, str );
+      g_buffer[cnt++] = '\v';
+      for (i=0;str[i] && cnt<MAXSTR-1;i++) g_buffer[cnt++] = str[i];
+      if (cnt == MAXSTR-1) croak("Warning: message truncated. Try increasing MAXSTR");
+      g_buffer[cnt] = '\0';
    }
-   return buf ;
+   return g_buffer;
 }
 
 /*****/
@@ -693,22 +693,49 @@ constant(name,arg)
 	int		arg
 
 void
-spawn(task,ntask,flag=PvmTaskDefault,where="")
-	char *	task
-	int 	ntask
-	int 	flag
-	char *	where
-	PROTOTYPE: $$;$$
+spawn(task,ntask,flag=PvmTaskDefault,where="",argvRef=0)
+	char *  task
+	int     ntask
+	int     flag
+	char *  where
+	SV *    argvRef
+	PROTOTYPE: $$;$$$
 	PREINIT:
-        int tids[MAXPROCS];
+	int tids[MAXPROCS];
 	int info;
-        int i;
+	int i;
+	char ** argv = (char **)0;
 	PPCODE:
-	info = pvm_spawn(task,0,flag,where,ntask,tids);
+ 
+	if (argvRef)
+	{
+	    int   argc;
+	    AV *  av;
+	    SV ** a;
+ 
+	    if (!SvROK(argvRef))
+	        croak("Parallel::Pvm::spawn - non-reference passed for argv");
+ 
+	    av = (AV *) SvRV( argvRef );
+	    argc = av_len( av ) + 1;        /* number of elts in vector */
+	    Newz( 0, argv, argc+1, char *); /* last one will be NULL */
+ 
+	    for (i = 0; i < argc; i++)
+	    {
+	       if ( a = av_fetch( av, i, 0) )
+	          argv[i] = (char *) SvPV( *a, na );
+	    }
+	}
+ 
+	info = pvm_spawn(task,argv,flag,where,ntask,tids);
+ 
+	Safefree( argv ); /* no harm done if argv is NULL */
+ 
 	XPUSHs(sv_2mortal(newSViv(info)));
 	for (i=0;i<info;i++){
 	   XPUSHs(sv_2mortal(newSViv(tids[i])));
 	}
+
 	
 int
 initsend(flag=PvmDataDefault)
@@ -738,17 +765,15 @@ psend(tid,tag,...)
 	int i;
 	char *str, *po;
 	CODE:
+	if ( items == 2 )
+	   croak("Usage: Parallel::Pvm::pack(@argv)");
 	for(i=2;i<items;i++){
-	   po = (char *)SvPV(ST(i),na);
-           if ( i == 2 ) {
-              str = buffer_string(po,1);
-           } else{
-              str = buffer_string(po,0);
-           }
-	}
-	if ( items == 2 ){
-	   str = (char *)calloc(1,sizeof(char));
-	   str[0] = '\0';
+	    po = (char *)SvPV(ST(i),na);
+            if ( i == 2 ) {
+               str = buffer_string(po,1);
+            } else{
+               str = buffer_string(po,0);
+            }
 	}
 	RETVAL = pvm_psend(tid,tag,str,string_byte_cnt(str),PVM_BYTE);
 	OUTPUT:
@@ -887,17 +912,15 @@ pack(...)
 	int i;
 	char *str, *po;
 	CODE:
+	if ( items <= 0 )
+	   croak("Usage: Parallel::Pvm::pack(@argv)");
         for (i=0;i<items;i++){
-	   po = (char *)SvPV(ST(i),na);
-           if ( i == 0 ) {
+	    po = (char *)SvPV(ST(i),na);
+            if ( i == 0 ) {
               str = buffer_string(po,1);
-           } else{
+            } else{
               str = buffer_string(po,0);
-           }
-	}
-	if ( items <= 0 ){
-	   str = (char *)calloc(1,sizeof(char));
-	   str[0] ='\0';
+            }
 	}
         RETVAL = pvm_pkstr(str); 
         OUTPUT:
@@ -1029,21 +1052,12 @@ addhosts(...)
 	   croak("Usage: Parallel::Pvm::pvm_addhosts(host_list)");
         for (i=0;i<items;i++){
 	   hosts[i] = (char *)SvPV(ST(i),na);
-	   /*
-	   hosts[i] = (char *)calloc(strlen(po)+1,sizeof(char));
-	   strcpy(hosts[i],po);
-	   */
 	}
 	info = pvm_addhosts(hosts,items,infos);
         XPUSHs(sv_2mortal(newSViv(info)));	
         for (i=0;i<items;i++){
 	    XPUSHs(sv_2mortal(newSViv(infos[i])));
 	}
-	/*
-        for (i=0;i<items;i++){
-	    free(hosts[i]);
-	}
-	*/
 
 void
 delhosts(...)
@@ -1058,10 +1072,6 @@ delhosts(...)
 	   croak("Usage: Parallel::Pvm::pvm_delhosts(host_list)");
         for (i=0;i<items;i++){
 	   hosts[i] = (char *)SvPV(ST(i),na);
-	   /*
-	   hosts[i] = (char *)calloc(strlen(po)+1,sizeof(char));
-	   strcpy(hosts[i],po);
-	   */
 	}
 	info = pvm_delhosts(hosts,items,infos);
         XPUSHs(sv_2mortal(newSViv(info)));	
@@ -1232,40 +1242,57 @@ perror(msg)
 
 int
 notify(what,tag,...)
-	int	what
-	int	tag
+	int     what
+	int     tag
 	PROTOTYPE: $$;@
 	PREINIT:
-	int i, tids[MAXPROCS];
+	int i, cnt, tids[MAXPROCS];
 	CODE:
 	switch(what){
 	   case PvmTaskExit:
 	   case PvmHostDelete:
-		if ( items < 3 )
-		   croak("Usage: Parallel::Pvm::pvm_notify(what,tag,tid_list");
-        	for (i=2;i<items;i++){
-	  	   tids[i-2] = SvIV(ST(i));
-		}
-		RETVAL = pvm_notify(what,tag,items-2,tids);
-		break;
+	        if ( items < 3 )
+	           croak("Usage: Parallel::Pvm::pvm_notify(what,tag,tid_list");
+	        for (i=2;i<items;i++){
+	           tids[i-2] = SvIV(ST(i));
+	        }
+	        RETVAL = pvm_notify(what,tag,items-2,tids);
+	        break;
 	   case PvmHostAdd:
-		RETVAL = pvm_notify(what,tag,0,tids);
-		break;
+	        if ( items < 2 )
+	          croak("Usage:  Parallel::Pvm::pvm_notify(PvmHostAdd,tag [,cnt]");
+	        if (2 == items )
+	        cnt = -1;
+	        else
+	           cnt = SvIV(ST(2));
+	        RETVAL = pvm_notify(what,tag, cnt, (int *)0 );
+	        break;
 	}
 	OUTPUT:
 	RETVAL
 
 int
-recv_notify()
-	PROTOTYPE:
+recv_notify(what)
+	int what
+	PROTOTYPE: $
 	PREINIT:
-	int id;
-	CODE:
+	int id,i,cnt;
+	int tids[MAXPROCS];
+	PPCODE:
 	pvm_recv(-1,-1);
-	pvm_upkint(&id,1,1);
-	RETVAL = id;
-	OUTPUT:
-	RETVAL
+	switch (what )
+	{
+	   case PvmTaskExit:
+	   case PvmHostDelete:
+	        pvm_upkint(&id,1,1);
+	        XPUSHs( sv_2mortal(newSViv(id)) );
+	        break;
+	   case PvmHostAdd:
+	        pvm_upkint( &cnt, 1, 1 );
+	        pvm_upkint( tids, cnt, 1 );
+	   for ( i=0; i < cnt; i++)
+	       XPUSHs(sv_2mortal(newSViv(tids[i])));
+	}
 
 void
 hostsync(hst)

@@ -93,7 +93,7 @@ require AutoLoader;
 	PvmTraceTid
 );
 
-$VERSION = '1.0';
+$VERSION = '1.1';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -348,7 +348,7 @@ the problem.  Eg.
 For more sophisticated users, B<Parallel::Pvm::spawn> may be given additional 
 argument parameters to control how/where you want a task to be spawned.
 For example, you can specifically spawn B<client> in the internet 
-host <onyx.nsrc.nus.sg> by calling
+host B<onyx.nsrc.nus.sg> by calling
 
 	Parallel::Pvm::spawn("client",1,PvmTaskHost,"onyx.nsrc.nus.sg");
 
@@ -356,6 +356,11 @@ Or you can spawn B<client> on host nodes only of a particular architecture,
 say RS6K workstations, by calling
 
 	Parallel::Pvm::spawn("client",4,PvmTaskArch,"RS6K");
+
+Also, if the spawned remote executable requires an argument B<argv>, 
+you can supply this by calling
+
+	Parallel::Pvm::spawn("client",4,PvmTaskArch,"RS6K",argv);
 
 Note that tasks which have been spawned by using B<Parallel::Pvm::spawn> 
 do not need to be explicitly enrolled into the pvm system.  
@@ -662,6 +667,12 @@ Requests notification of PVM events. Eg.
 
 	$info = Parallel::Pvm::notify(PvmHostDelete,999,$host_list);
 
+	# turns on notification for new host
+	$info = Parallel::Pvm::notify(PvmHostAdd);
+
+        # turns off notification for new host
+	$info = Parallel::Pvm::notify(PvmHostAdd,0);
+
 =item B<Parallel::Pvm::nrecv>
 
 Nonblocking receive.  Eg.
@@ -753,9 +764,13 @@ Redefines the comparison function used to accept messages.  Eg.
 Receives the notification message initiated by B<Parallel::Pvm::notify>.  This 
 should be preceded by a B<Parallel::Pvm::probe>.  Eg.
 
+	# for PvmTaskExit and PvmHostDelete notification
 	if ( Parallel::Pvm::probe(-1,$notify_tag) ){
-		$message = Parallel::Pvm::recv_notify ;
+		$message = Parallel::Pvm::recv_notify(PvmTaskExit) ;
 	}
+
+	# for PvmHostAdd notification
+	@htid_list = Parallel::Pvm::recv_notify(PvmHostAdd);
 
 =item B<Parallel::Pvm::recvf_old>
 
@@ -829,6 +844,8 @@ Starts new PVM processes.  Eg.
 	($ntask,@tid_list) = Parallel::Pvm::spawn("compute.pl",4);
 
 	($ntask,@tid_list) = Parallel::Pvm::spawn("compute.pl",4,PvmTaskHost,"onyx");
+
+	($ntask,@tid_list) = Parallel::Pvm::spawn("compute.pl",4,PvmTaskHost,"onyx",argv);
 
 =item B<Parallel::Pvm::tasks>
 

@@ -73,7 +73,7 @@
 .nr % 0
 .rr F
 .\}
-.TH PVM 1 "perl 5.003 with" "27/Aug/96" "User Contributed Perl Documentation"
+.TH PVM 1 "perl " "14/Oct/96" "User Contributed Perl Documentation"
 .IX Title "PVM 1"
 .UC
 .IX Name "Parallel::Pvm - Perl extension for the Parallel Virtual Machine (PVM) Message Passing System"
@@ -402,7 +402,7 @@ the problem.  Eg.
 For more sophisticated users, \fBParallel::Pvm::spawn\fR may be given additional 
 argument parameters to control how/where you want a task to be spawned.
 For example, you can specifically spawn \fBclient\fR in the internet 
-host <onyx.nsrc.nus.sg> by calling
+host \fBonyx.nsrc.nus.sg\fR by calling
 .PP
 .Vb 1
 \&        Parallel::Pvm::spawn("client",1,PvmTaskHost,"onyx.nsrc.nus.sg");
@@ -412,6 +412,12 @@ say \s-1RS6K\s0 workstations, by calling
 .PP
 .Vb 1
 \&        Parallel::Pvm::spawn("client",4,PvmTaskArch,"RS6K");
+.Ve
+Also, if the spawned remote executable requires an argument \fBargv\fR, 
+you can supply this by calling
+.PP
+.Vb 1
+\&        Parallel::Pvm::spawn("client",4,PvmTaskArch,"RS6K",argv);
 .Ve
 Note that tasks which have been spawned by using \fBParallel::Pvm::spawn\fR 
 do not need to be explicitly enrolled into the pvm system.  
@@ -748,6 +754,14 @@ Requests notification of \s-1PVM\s0 events. Eg.
 .Vb 1
 \&        $info = Parallel::Pvm::notify(PvmHostDelete,999,$host_list);
 .Ve
+.Vb 2
+\&        # turns on notification for new host
+\&        $info = Parallel::Pvm::notify(PvmHostAdd);
+.Ve
+.Vb 2
+\&        # turns off notification for new host
+\&        $info = Parallel::Pvm::notify(PvmHostAdd,0);
+.Ve
 .Ip "\fBParallel::Pvm::nrecv\fR" 4
 .IX Item "\fBParallel::Pvm::nrecv\fR"
 Nonblocking receive.  Eg.
@@ -856,10 +870,15 @@ Redefines the comparison function used to accept messages.  Eg.
 Receives the notification message initiated by \fBParallel::Pvm::notify\fR.  This 
 should be preceded by a \fBParallel::Pvm::probe\fR.  Eg.
 .Sp
-.Vb 3
+.Vb 4
+\&        # for PvmTaskExit and PvmHostDelete notification
 \&        if ( Parallel::Pvm::probe(-1,$notify_tag) ){
-\&                $message = Parallel::Pvm::recv_notify ;
+\&                $message = Parallel::Pvm::recv_notify(PvmTaskExit) ;
 \&        }
+.Ve
+.Vb 2
+\&        # for PvmHostAdd notification
+\&        @htid_list = Parallel::Pvm::recv_notify(PvmHostAdd);
 .Ve
 .Ip "\fBParallel::Pvm::recvf_old\fR" 4
 .IX Item "\fBParallel::Pvm::recvf_old\fR"
@@ -946,6 +965,9 @@ Starts new \s-1PVM\s0 processes.  Eg.
 .Ve
 .Vb 1
 \&        ($ntask,@tid_list) = Parallel::Pvm::spawn("compute.pl",4,PvmTaskHost,"onyx");
+.Ve
+.Vb 1
+\&        ($ntask,@tid_list) = Parallel::Pvm::spawn("compute.pl",4,PvmTaskHost,"onyx",argv);
 .Ve
 .Ip "\fBParallel::Pvm::tasks\fR" 4
 .IX Item "\fBParallel::Pvm::tasks\fR"

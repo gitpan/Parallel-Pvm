@@ -17,17 +17,14 @@ You must also set the environment variables
 	setenv PVM_ROOT <pvm root directory>
 	setenv PVM_ARCH `$PVM_ROOT/lib/pvmgetarch`
 
-Remember to give yourself write permission to the PVM_ROOT
-directory in order to install PERL-PVM.  
-
 For a correct installation you will also need perl5.002 
 or greater.
 
 Once all the preliminaries have been done, the installation 
 sequence is as follows:
 
-	tar xvf Pvm-1.0.tar 
-	cd Pvm-1.0
+	tar xvf Parallel-Pvm-1.1.tar 
+	cd Parallel-Pvm-1.1
 
 Have a look into Makefile.PL to see if you have to make any 
 changes.  Afterwhich do 
