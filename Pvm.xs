@@ -90,43 +90,6 @@ string_byte_cnt( char *str )
   return cnt+1;
 }
 
-static int
-string_type( char *str )
-{
-  int i=0;
-  int could_be_double=0;
-  int must_be_double=0;
- 
-  while ( str[i] != '\0' )
-  {
-    /* */
-    if ( ! isdigit(str[i]) )
-    {
-      if ( str[i] == '.' && could_be_double == 0 )
-      {
-        could_be_double = 1;
-      }
-      else
-      {
-        return STRING;
-      }
-    }
-    /* else
-    {
-      if ( could_be_double )
-      {
-        if ( str[i] != '0' )
-        {
-          must_be_double = 1;
-        }
-      }
-    } */
-        i++;
-  }
-  if ( could_be_double ) return DOUBLE;
-  return INTEGER;
-}
-
 static char *
 buffer_string( char *str, int new_flag )
 {
@@ -781,7 +744,7 @@ psend(tid,tag,...)
   char *str, *po;
   CODE:
   if ( items == 2 )
-     croak("Usage: Parallel::Pvm::pack(@argv)");
+     croak("Usage: Parallel::Pvm::psend(@argv)");
   for(i=2;i<items;i++)
   {
     po = (char *)SvPV(ST(i), PL_na);
@@ -901,19 +864,9 @@ precv(tid=-1,tag=-1)
   po = strtok(str,"\v");
   while ( po != NULL )
   {
-    type = string_type(po); 
-    switch(type)
-    {
-      case STRING:
-        XPUSHs(sv_2mortal(newSVpv(po,0)));
-        break;
-      case INTEGER:
-        XPUSHs(sv_2mortal(newSViv(atoi(po))));
-        break;
-      case DOUBLE:
-        XPUSHs(sv_2mortal(newSVnv(atof(po))));
-        break;
-    }
+	/* Change: Everything is a string 
+     * sn@neopoly.com Fri Feb  9 13:41:46 CET 2001 */
+    XPUSHs(sv_2mortal(newSVpv(po,0)));
     po = strtok(NULL,"\v");
   }
 
@@ -973,19 +926,9 @@ unpack()
   po = strtok(str,"\v");
   while ( po != NULL )
   {
-    type = string_type(po); 
-    switch(type)
-    {
-      case STRING:
-        XPUSHs(sv_2mortal(newSVpv(po,0)));
-        break;
-      case INTEGER:
-        XPUSHs(sv_2mortal(newSViv(atoi(po))));
-        break;
-      case DOUBLE:
-        XPUSHs(sv_2mortal(newSVnv(atof(po))));
-        break;
-    }
+	/* Change: Everything is a string 
+     * sn@neopoly.com Fri Feb  9 13:41:46 CET 2001 */
+    XPUSHs(sv_2mortal(newSVpv(po,0)));
     po = strtok(NULL,"\v");
   }
 
@@ -1031,26 +974,27 @@ tasks(where=0)
   PPCODE:
   info = pvm_tasks(where,&ntask,&taskp);
   XPUSHs(sv_2mortal(newSViv(info)));
-  for(i=0;i<ntask;i++)
-  {
-    strcpy(ti_a_out,taskp[i].ti_a_out);
-    ti_tid = taskp[i].ti_tid;
-    ti_ptid = taskp[i].ti_ptid;
-    ti_pid = taskp[i].ti_pid;
-    ti_host = taskp[i].ti_host;
-    ti_flag = taskp[i].ti_flag;
-    /* set up hash entry */
-    hv_tmp = newHV();
-    /* sv_2mortal((SV *)hv_tmp); */
-    hv_store(hv_tmp,"ti_a_out",8,newSVpv(ti_a_out,0),0);
-    hv_store(hv_tmp,"ti_tid",6,newSViv(ti_tid),0);
-    hv_store(hv_tmp,"ti_ptid",7,newSViv(ti_ptid),0);
-    hv_store(hv_tmp,"ti_pid",6,newSViv(ti_pid),0);
-    hv_store(hv_tmp,"ti_host",7,newSViv(ti_host),0);
-    hv_store(hv_tmp,"ti_flag",7,newSViv(ti_flag),0);
-    /* create reference and stick in on the stack */
-    XPUSHs(sv_2mortal(newRV((SV *)hv_tmp)));
-  }
+  if (info >= 0) /* ntask may be undefined if there was an error */
+    for(i=0;i<ntask;i++)
+    {
+      strcpy(ti_a_out,taskp[i].ti_a_out);
+      ti_tid = taskp[i].ti_tid;
+      ti_ptid = taskp[i].ti_ptid;
+      ti_pid = taskp[i].ti_pid;
+      ti_host = taskp[i].ti_host;
+      ti_flag = taskp[i].ti_flag;
+      /* set up hash entry */
+      hv_tmp = newHV();
+      /* sv_2mortal((SV *)hv_tmp); */
+      hv_store(hv_tmp,"ti_a_out",8,newSVpv(ti_a_out,0),0);
+      hv_store(hv_tmp,"ti_tid",6,newSViv(ti_tid),0);
+      hv_store(hv_tmp,"ti_ptid",7,newSViv(ti_ptid),0);
+      hv_store(hv_tmp,"ti_pid",6,newSViv(ti_pid),0);
+      hv_store(hv_tmp,"ti_host",7,newSViv(ti_host),0);
+      hv_store(hv_tmp,"ti_flag",7,newSViv(ti_flag),0);
+      /* create reference and stick in on the stack */
+      XPUSHs(sv_2mortal(newRV((SV *)hv_tmp)));
+    }
 
 
 void

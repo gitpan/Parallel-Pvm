@@ -94,7 +94,7 @@ require AutoLoader;
 	PvmTraceTid
 );
 
-$VERSION = '1.2.1';
+$VERSION = '1.2.2';
 
 sub AUTOLOAD 
 {
@@ -411,6 +411,12 @@ example,
 
 	$tag = 999;
 	Parallel::Pvm::recv($stid,$tag) ;
+
+I<Caveats>: The perl module currently limits the size of a single message to
+100.000 bytes. To increase this, change C<MAXSTR> in F<Pvm.c>. Messages
+may not contain the vertical tab character C<"\v">. If you pass messages
+to programs written in other languages, you need to know that
+C<Parallel::Pvm::pack> packs everything as strings (with C<pvm_packstr>).
 
 Other message passing functions that you may find useful are 
 B<Parallel::Pvm::psend>, B<Parallel::Pvm::trecv>, B<Parallel::Pvm::nrecv> and B<Parallel::Pvm::precv>.  

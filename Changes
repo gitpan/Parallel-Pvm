@@ -1,5 +1,12 @@
 Revision history for Perl extension Pvm.
 
+1.2.1 to 1.2.2
+---------------
+Fix segfault in tasks() if there is an error.
+Get rid of string_type to avoid integer overflow problems.
+unpack() and precv() interpret everything as a string, like pack().
+Thanks to Sven Neuhaus <sn@neopoly.com> for the patch!
+
 1.2 to 1.2.1
 ----------
 Debug for proper compilation under Perl 5.6.0.
