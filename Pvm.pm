@@ -13,88 +13,43 @@ require AutoLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw
-(
-	PVM_BYTE
-	PVM_CPLX
-	PVM_DCPLX
-	PVM_DOUBLE
-	PVM_FLOAT
-	PVM_INT
-	PVM_LONG
-	PVM_SHORT
-	PVM_STR
-	PVM_UINT
-	PVM_ULONG
-	PVM_USHORT
-	PvmAllowDirect
-	PvmAlready
-	PvmAutoErr
-	PvmBadMsg
-	PvmBadParam
-	PvmBadVersion
-	PvmCantStart
-	PvmDSysErr
-	PvmDataDefault
-	PvmDataFoo
-	PvmDataInPlace
-	PvmDataRaw
-	PvmDebugMask
-	PvmDontRoute
-	PvmDupEntry
-	PvmDupGroup
-	PvmDupHost
-	PvmFragSize
-	PvmHostAdd
-	PvmHostCompl
-	PvmHostDelete
-	PvmHostFail
-	PvmMismatch
-	PvmMppFront
-	PvmNoBuf
-	PvmNoData
-	PvmNoEntry
-	PvmNoFile
-	PvmNoGroup
-	PvmNoHost
-	PvmNoInst
-	PvmNoMem
-	PvmNoParent
-	PvmNoSuchBuf
-	PvmNoTask
-	PvmNotImpl
-	PvmNotInGroup
-	PvmNullGroup
-	PvmOk
-	PvmOutOfRes
-	PvmOutputCode
-	PvmOutputTid
-	PvmOverflow
-	PvmPollConstant
-	PvmPollSleep
-	PvmPollTime
-	PvmPollType
-	PvmResvTids
-	PvmRoute
-	PvmRouteDirect
-	PvmSelfOutputCode
-	PvmSelfOutputTid
-	PvmSelfTraceCode
-	PvmSelfTraceTid
-	PvmShowTids
-	PvmSysErr
-	PvmTaskArch
-	PvmTaskChild
-	PvmTaskDebug
-	PvmTaskDefault
-	PvmTaskExit
-	PvmTaskHost
-	PvmTaskSelf
-	PvmTaskTrace
-	PvmTraceCode
-	PvmTraceTid
+  (
+   PVM_BYTE PVM_CPLX PVM_DCPLX PVM_DOUBLE PVM_FLOAT PVM_INT
+   PVM_LONG PVM_SHORT PVM_STR PVM_UINT PVM_ULONG PVM_USHORT
+   PvmAllowDirect PvmAlready PvmAutoErr PvmBadMsg PvmBadParam
+   PvmBadVersion PvmCantStart PvmDSysErr PvmDataDefault
+   PvmDataFoo PvmDataInPlace PvmDataRaw PvmDebugMask PvmDontRoute
+   PvmDupEntry PvmDupGroup PvmDupHost PvmFragSize PvmHostAdd
+   PvmHostCompl PvmHostDelete PvmHostFail PvmMismatch PvmMppFront
+   PvmNoBuf PvmNoData PvmNoEntry PvmNoFile PvmNoGroup PvmNoHost
+   PvmNoInst PvmNoMem PvmNoParent PvmNoSuchBuf PvmNoTask
+   PvmNotImpl PvmNotInGroup PvmNullGroup PvmOk PvmOutOfRes
+   PvmOutputCode PvmOutputTid PvmOverflow PvmPollConstant
+   PvmPollSleep PvmPollTime PvmPollType PvmResvTids PvmRoute
+   PvmRouteDirect PvmSelfOutputCode PvmSelfOutputTid
+   PvmSelfTraceCode PvmSelfTraceTid PvmShowTids PvmSysErr
+   PvmTaskArch PvmTaskChild PvmTaskDebug PvmTaskDefault
+   PvmTaskExit PvmTaskHost PvmTaskSelf PvmTaskTrace PvmTraceCode
+   PvmTraceTid
 );
 
-$VERSION = '1.2.2';
+# Theese are the badd ones:
+#     send pack unpack exit recv kill 
+@EXPORT_OK = qw
+  (
+
+   spawn initsend psend mcast sendsig probe nrecv trecv precv parent
+   mytid halt catchout tasks config addhosts delhosts bufinfo freebuf
+   getrbuf getsbuf mkbuf setrbuf setsbuf mstat pstat tidtohost getopt
+   setopt reg_hoster reg_tasker reg_rm perror notify recv_notify
+   hostsync recvf recvf_old
+
+   joingroup lvgroup bcast freezegroup barrier getinst gettid gsize
+
+   code2symbol code2text
+  );
+
+$VERSION = '1.3.0-b1';
 
 sub AUTOLOAD 
 {
@@ -119,13 +74,14 @@ sub AUTOLOAD
 	}
     }
     no strict 'refs';
-    *$AUTOLOAD = sub () { $val };
+    *$AUTOLOAD = sub { $val };
     goto &$AUTOLOAD;
 }
 
 bootstrap Parallel::Pvm $VERSION;
 
 # Preloaded methods go here.
+
 
 # Autoload methods go after =cut, and are processed by the autosplit program.
 
@@ -382,15 +338,15 @@ the example code sequence
 	Parallel::Pvm::pack(1234);
 	Parallel::Pvm::send($dtid,999);
 
-In our example we first call B<Parallel::Pvm::initsend> to initialize 
-the internal PVM send buffer.  
-We then call B<Parallel::Pvm::buffer> to fill this buffer with a double (2.345),
-, a string ("hello dude"), and an integer (1234).  
-Having filled the send buffer with the data that is to be sent, 
-we call B<Parallel::Pvm::send> to do the actual send to the task identifed by the B<TID> 
-B<$dtid>.   We also label the sending message to disambiguate it with 
-other messages with a tag.  This is done with the 999 argument in 
-B<Parallel::Pvm::send> function.  
+In our example we first call B<Parallel::Pvm::initsend> to initialize
+the internal PVM send buffer.  We then call B<Parallel::Pvm::buffer>
+to fill this buffer with a double (2.345), a string ("hello dude"),
+and an integer (1234) <b>Actually, currently all arguments are
+converted to strings</b>.  Having filled the send buffer with the data
+that is to be sent, we call B<Parallel::Pvm::send> to do the actual
+send to the task identifed by the B<TID> B<$dtid>.  We also label the
+sending message to disambiguate it with other messages with a tag.
+This is done with the 999 argument in B<Parallel::Pvm::send> function.
 
 For the destination task, we can receive the message sent by 
 performing a blocking receive with the function B<Parallel::Pvm::recv>.  
@@ -412,11 +368,10 @@ example,
 	$tag = 999;
 	Parallel::Pvm::recv($stid,$tag) ;
 
-I<Caveats>: The perl module currently limits the size of a single message to
-100.000 bytes. To increase this, change C<MAXSTR> in F<Pvm.c>. Messages
-may not contain the vertical tab character C<"\v">. If you pass messages
-to programs written in other languages, you need to know that
-C<Parallel::Pvm::pack> packs everything as strings (with C<pvm_packstr>).
+I<Caveats>: Messages may not contain the vertical tab character
+C<"\v">. If you pass messages to programs written in other languages,
+you need to know that C<Parallel::Pvm::pack> packs everything as
+strings (with C<pvm_packstr>).
 
 Other message passing functions that you may find useful are 
 B<Parallel::Pvm::psend>, B<Parallel::Pvm::trecv>, B<Parallel::Pvm::nrecv> and B<Parallel::Pvm::precv>.  
@@ -543,19 +498,27 @@ B<Server:>
 
 =head2 PVM groups 
 
-The PVM dynamic group functions have not been ported to perl yet.  
-These functions provide facilities for collecting processes under 
-a single B<group> label, and applying aggregate operations onto 
-them.  Examples of these functions are B<Parallel::Pvm::barrier>, B<Parallel::Pvm::reduce>, 
-B<Parallel::Pvm::bcast> etc.  
-One of our concerns is that these group functions may be 
-changed or augmented in the future releases of PVM 3.4*. A decision 
-for porting the group functions will be made after 
-PVM 3.4 has been released.  
+The PVM dynamic group functions have not completely been ported to
+Perl yet.  We do not support B<pvm_scatter>, B<pvm_gather>, and
+B<pvm_reduce> currently.  This is connected to the limited datatype
+support in the rest of the Perl interface.
+
+The group functions provide facilities for collecting processes under
+a single B<group> label, and applying aggregate operations onto them.
+Examples of these functions are B<Parallel::Pvm::barrier>,
+B<Parallel::Pvm::reduce>, B<Parallel::Pvm::bcast> etc.  One of our
+concerns is that these group functions may be changed or augmented in
+the future releases of PVM 3.4*.
 
 =head1 FUNCTIONS
 
 =over 4
+
+=item B<Parallel::Pvm::start_pvmd>
+
+Starts pvmd if it's not already running.
+
+	$info = Parallel::Pvm::start_pvmd($block, @args) ;
 
 =item B<Parallel::Pvm::addhosts> 
 
@@ -728,7 +691,8 @@ Receives a message directly into a buffer.
 
 	@recv_buffer = Parallel::Pvm::precv($tid,$tag);
 
-Note that the current limit for the receive buffer is 100 KBytes.  
+Note that the current limit for the receive buffer is 100 KBytes
+unless you specify a third argument overwriting this limit.
 
 =item B<Parallel::Pvm::probe>
 
@@ -894,6 +858,9 @@ Unpacks the active receive message buffer.  Eg.
 
 	@recv_buffer = Parallel::Pvm::unpack ;
 
+An optional integer argument gives the maximum message size to unpack.
+Default is 100_000 bytes.
+
 =back
 
 =head1 AUTHORS
@@ -903,8 +870,86 @@ National Supercomputing Research Centre, Singapore
 
 Denis Leconte, denis_leconte@geocities.com 
 
+Ulrich Pfeifer, pfeifer@wait.de
+
 =head1 SEE ALSO
 
 perl(1), pvm_intro(1PVM)
 
 =cut
+
+sub code2symbol ($ ) {
+  my %n2s = (
+             0    => 'Ok',
+             -2   => 'BadParam',
+             -3   => 'Mismatch',
+             -4   => 'Overflow',
+             -5   => 'NoData',
+             -6   => 'NoHost',
+             -7   => 'NoFile',
+             -8   => 'Denied',
+             -10  => 'NoMem',
+             -12  => 'BadMsg',
+             -14  => 'SysErr',
+             -15  => 'NoBuf',
+             -16  => 'NoSuchBuf',
+             -17  => 'NullGroup',
+             -18  => 'DupGroup',
+             -19  => 'NoGroup',
+             -20  => 'NotInGroup',
+             -21  => 'NoInst',
+             -22  => 'HostFail',
+             -23  => 'NoParent',
+             -24  => 'NotImpl',
+             -25  => 'DSysErr',
+             -26  => 'BadVersion',
+             -27  => 'OutOfRes',
+             -28  => 'DupHost',
+             -29  => 'CantStart',
+             -30  => 'Already',
+             -31  => 'NoTask',
+             -32  => 'NotFound',
+             -33  => 'Exists',
+             -34  => 'HostrNMstr',
+             -35  => 'ParentNotSet',
+            );
+  $n2s{$_[0]}
+}
+
+sub code2text ($ ) {
+  my %n2t = (
+             0   => "Success",
+             -2  => "Bad parameter",
+             -3  => "Parameter mismatch",
+             -4  => "Value too large",
+             -5  => "End of buffer",
+             -6  => "No such host",
+             -7  => "No such file",
+             -8  => "Permission denied",
+             -10 => "Malloc failed",
+             -12 => "Can't decode message",
+             -14 => "Can't contact local daemon",
+             -15 => "No current buffer",
+             -16 => "No such buffer",
+             -17 => "Null group name",
+             -18 => "Already in group",
+             -19 => "No such group",
+             -20 => "Not in group",
+             -21 => "No such instance",
+             -22 => "Host failed",
+             -23 => "No parent task",
+             -24 => "Not implemented",
+             -25 => "Pvmd system error",
+             -26 => "Version mismatch",
+             -27 => "Out of resources",
+             -28 => "Duplicate host",
+             -29 => "Can't start pvmd",
+             -30 => "Already in progress",
+             -31 => "No such task",
+             -32 => "Not Found",
+             -33 => "Already exists",
+             -34 => "Hoster run on non-master host",
+             -35 => "Spawning parent set PvmNoSpawnParent",
+            );
+  $n2t{$_[0]}
+}

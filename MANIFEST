@@ -1,6 +1,8 @@
-Changes
 MANIFEST
 Makefile.PL
 Pvm.pm
 Pvm.xs
-test.pl
+t/bigmsg.t
+ChangeLog
+t/group.t
+README

@@ -1,3 +1,11 @@
+/*                               -*- Mode: C -*- 
+ * $Basename$
+ * $Revision$
+ * Author          : Edward Walker / Denis Leconte
+ * Last Modified By: Ulrich Pfeifer
+ * Last Modified On: Thu Sep 20 20:23:12 2001
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,12 +26,12 @@ extern "C" {
 #define MAXPROCS	100
 #define MAXHOSTS	100
 #define MAXSTR		100000
+#define MAXARGS		50
 
 #define STRING          1
 #define INTEGER         2
 #define DOUBLE          3
  
-static char g_buffer[MAXSTR];
 static SV *recvf_callback = (SV *)NULL;
 static int (*olmatch)();
 
@@ -78,46 +86,6 @@ derefHV( SV *node )
 }
 
 static int
-string_byte_cnt( char *str )
-{
-  int cnt=0;
-
-  while( str[cnt] != '\0' )
-  {
-    cnt++;
-  }
-  /* add 1 for the byte holding the '\0' */
-  return cnt+1;
-}
-
-static char *
-buffer_string( char *str, int new_flag )
-{
-  static int cnt;
-  int i;
- 
-  if ( new_flag )
-  {
-    cnt=0;
-    for (i=0;str[i] && cnt<MAXSTR-1;i++) g_buffer[cnt++] = str[i];
-    if (cnt == MAXSTR-1) croak("Warning: message truncated. Try increasing MAXSTR");
-    g_buffer[cnt] = '\0';
-  }
-  else
-  {
-    /* use vertical tab as token separator */
-    g_buffer[cnt++] = '\v';
-    for (i=0;str[i] && cnt<MAXSTR-1;i++) g_buffer[cnt++] = str[i];
-    if (cnt == MAXSTR-1) croak("Warning: message truncated. Try increasing MAXSTR");
-    g_buffer[cnt] = '\0';
-  }
-  return g_buffer;
-}
-
-/*****/
-
-
-static int
 not_here(char *s)
 {
     croak("%s not implemented on this architecture", s);
@@ -127,546 +95,105 @@ not_here(char *s)
 static double
 constant(char *name, int arg)
 {
-    errno = 0;
-    switch (*name) 
-    {
-    case 'A':
-	break;
-    case 'B':
-	break;
-    case 'C':
-	break;
-    case 'D':
-	break;
-    case 'E':
-	break;
-    case 'F':
-	break;
-    case 'G':
-	break;
-    case 'H':
-	break;
-    case 'I':
-	break;
-    case 'J':
-	break;
-    case 'K':
-	break;
-    case 'L':
-	break;
-    case 'M':
-	break;
-    case 'N':
-	break;
-    case 'O':
-	break;
-    case 'P':
-	if (strEQ(name, "PVM_BYTE"))
-#ifdef PVM_BYTE
-	    return PVM_BYTE;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_CPLX"))
-#ifdef PVM_CPLX
-	    return PVM_CPLX;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_DCPLX"))
-#ifdef PVM_DCPLX
-	    return PVM_DCPLX;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_DOUBLE"))
-#ifdef PVM_DOUBLE
-	    return PVM_DOUBLE;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_FLOAT"))
-#ifdef PVM_FLOAT
-	    return PVM_FLOAT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_INT"))
-#ifdef PVM_INT
-	    return PVM_INT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_LONG"))
-#ifdef PVM_LONG
-	    return PVM_LONG;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_SHORT"))
-#ifdef PVM_SHORT
-	    return PVM_SHORT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_STR"))
-#ifdef PVM_STR
-	    return PVM_STR;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_UINT"))
-#ifdef PVM_UINT
-	    return PVM_UINT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_ULONG"))
-#ifdef PVM_ULONG
-	    return PVM_ULONG;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PVM_USHORT"))
-#ifdef PVM_USHORT
-	    return PVM_USHORT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmAllowDirect"))
-#ifdef PvmAllowDirect
-	    return PvmAllowDirect;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmAlready"))
-#ifdef PvmAlready
-	    return PvmAlready;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmAutoErr"))
-#ifdef PvmAutoErr
-	    return PvmAutoErr;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmBadMsg"))
-#ifdef PvmBadMsg
-	    return PvmBadMsg;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmBadParam"))
-#ifdef PvmBadParam
-	    return PvmBadParam;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmBadVersion"))
-#ifdef PvmBadVersion
-	    return PvmBadVersion;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmCantStart"))
-#ifdef PvmCantStart
-	    return PvmCantStart;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDSysErr"))
-#ifdef PvmDSysErr
-	    return PvmDSysErr;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDataDefault"))
-#ifdef PvmDataDefault
-	    return PvmDataDefault;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDataFoo"))
-#ifdef PvmDataFoo
-	    return PvmDataFoo;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDataInPlace"))
-#ifdef PvmDataInPlace
-	    return PvmDataInPlace;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDataRaw"))
-#ifdef PvmDataRaw
-	    return PvmDataRaw;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDebugMask"))
-#ifdef PvmDebugMask
-	    return PvmDebugMask;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDontRoute"))
-#ifdef PvmDontRoute
-	    return PvmDontRoute;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDupEntry"))
-#ifdef PvmDupEntry
-	    return PvmDupEntry;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDupGroup"))
-#ifdef PvmDupGroup
-	    return PvmDupGroup;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmDupHost"))
-#ifdef PvmDupHost
-	    return PvmDupHost;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmFragSize"))
-#ifdef PvmFragSize
-	    return PvmFragSize;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmHostAdd"))
-#ifdef PvmHostAdd
-	    return PvmHostAdd;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmHostCompl"))
-#ifdef PvmHostCompl
-	    return PvmHostCompl;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmHostDelete"))
-#ifdef PvmHostDelete
-	    return PvmHostDelete;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmHostFail"))
-#ifdef PvmHostFail
-	    return PvmHostFail;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmMismatch"))
-#ifdef PvmMismatch
-	    return PvmMismatch;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmMppFront"))
-#ifdef PvmMppFront
-	    return PvmMppFront;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoBuf"))
-#ifdef PvmNoBuf
-	    return PvmNoBuf;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoData"))
-#ifdef PvmNoData
-	    return PvmNoData;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoEntry"))
-#ifdef PvmNoEntry
-	    return PvmNoEntry;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoFile"))
-#ifdef PvmNoFile
-	    return PvmNoFile;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoGroup"))
-#ifdef PvmNoGroup
-	    return PvmNoGroup;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoHost"))
-#ifdef PvmNoHost
-	    return PvmNoHost;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoInst"))
-#ifdef PvmNoInst
-	    return PvmNoInst;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoMem"))
-#ifdef PvmNoMem
-	    return PvmNoMem;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoParent"))
-#ifdef PvmNoParent
-	    return PvmNoParent;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoSuchBuf"))
-#ifdef PvmNoSuchBuf
-	    return PvmNoSuchBuf;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNoTask"))
-#ifdef PvmNoTask
-	    return PvmNoTask;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNotImpl"))
-#ifdef PvmNotImpl
-	    return PvmNotImpl;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNotInGroup"))
-#ifdef PvmNotInGroup
-	    return PvmNotInGroup;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmNullGroup"))
-#ifdef PvmNullGroup
-	    return PvmNullGroup;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmOk"))
-#ifdef PvmOk
-	    return PvmOk;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmOutOfRes"))
-#ifdef PvmOutOfRes
-	    return PvmOutOfRes;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmOutputCode"))
-#ifdef PvmOutputCode
-	    return PvmOutputCode;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmOutputTid"))
-#ifdef PvmOutputTid
-	    return PvmOutputTid;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmOverflow"))
-#ifdef PvmOverflow
-	    return PvmOverflow;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmPollConstant"))
-#ifdef PvmPollConstant
-	    return PvmPollConstant;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmPollSleep"))
-#ifdef PvmPollSleep
-	    return PvmPollSleep;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmPollTime"))
-#ifdef PvmPollTime
-	    return PvmPollTime;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmPollType"))
-#ifdef PvmPollType
-	    return PvmPollType;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmResvTids"))
-#ifdef PvmResvTids
-	    return PvmResvTids;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmRoute"))
-#ifdef PvmRoute
-	    return PvmRoute;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmRouteDirect"))
-#ifdef PvmRouteDirect
-	    return PvmRouteDirect;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmSelfOutputCode"))
-#ifdef PvmSelfOutputCode
-	    return PvmSelfOutputCode;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmSelfOutputTid"))
-#ifdef PvmSelfOutputTid
-	    return PvmSelfOutputTid;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmSelfTraceCode"))
-#ifdef PvmSelfTraceCode
-	    return PvmSelfTraceCode;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmSelfTraceTid"))
-#ifdef PvmSelfTraceTid
-	    return PvmSelfTraceTid;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmShowTids"))
-#ifdef PvmShowTids
-	    return PvmShowTids;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmSysErr"))
-#ifdef PvmSysErr
-	    return PvmSysErr;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskArch"))
-#ifdef PvmTaskArch
-	    return PvmTaskArch;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskChild"))
-#ifdef PvmTaskChild
-	    return PvmTaskChild;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskDebug"))
-#ifdef PvmTaskDebug
-	    return PvmTaskDebug;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskDefault"))
-#ifdef PvmTaskDefault
-	    return PvmTaskDefault;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskExit"))
-#ifdef PvmTaskExit
-	    return PvmTaskExit;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskHost"))
-#ifdef PvmTaskHost
-	    return PvmTaskHost;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskSelf"))
-#ifdef PvmTaskSelf
-	    return PvmTaskSelf;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTaskTrace"))
-#ifdef PvmTaskTrace
-	    return PvmTaskTrace;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTraceCode"))
-#ifdef PvmTraceCode
-	    return PvmTraceCode;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PvmTraceTid"))
-#ifdef PvmTraceTid
-	    return PvmTraceTid;
-#else
-	    goto not_there;
-#endif
-	break;
-    case 'Q':
-	break;
-    case 'R':
-	break;
-    case 'S':
-	break;
-    case 'T':
-	break;
-    case 'U':
-	break;
-    case 'V':
-	break;
-    case 'W':
-	break;
-    case 'X':
-	break;
-    case 'Y':
-	break;
-    case 'Z':
-	break;
-    }
-    errno = EINVAL;
-    return 0;
+  /* This function is used for autoloading, no need to optimeze for
+     speed.  The ifdef stuff also makes not too much sense, because
+     nobody will handle different name sets anyway. */
+  errno = 0;
+  if (strEQ(name, "PVM_BYTE"))          return PVM_BYTE;
+  if (strEQ(name, "PVM_CPLX"))          return PVM_CPLX;
+  if (strEQ(name, "PVM_DCPLX"))         return PVM_DCPLX;
+  if (strEQ(name, "PVM_DOUBLE"))        return PVM_DOUBLE;
+  if (strEQ(name, "PVM_FLOAT"))         return PVM_FLOAT;
+  if (strEQ(name, "PVM_INT"))           return PVM_INT;
+  if (strEQ(name, "PVM_LONG"))          return PVM_LONG;
+  if (strEQ(name, "PVM_SHORT"))         return PVM_SHORT;
+  if (strEQ(name, "PVM_STR"))           return PVM_STR;
+  if (strEQ(name, "PVM_UINT"))          return PVM_UINT;
+  if (strEQ(name, "PVM_ULONG"))         return PVM_ULONG;
+  if (strEQ(name, "PVM_USHORT"))        return PVM_USHORT;
+  if (strEQ(name, "PvmAllowDirect"))    return PvmAllowDirect;
+  if (strEQ(name, "PvmAlready"))        return PvmAlready;
+  if (strEQ(name, "PvmAutoErr"))        return PvmAutoErr;
+  if (strEQ(name, "PvmBadMsg"))         return PvmBadMsg;
+  if (strEQ(name, "PvmBadParam"))       return PvmBadParam;
+  if (strEQ(name, "PvmBadVersion"))     return PvmBadVersion;
+  if (strEQ(name, "PvmCantStart"))      return PvmCantStart;
+  if (strEQ(name, "PvmDSysErr"))        return PvmDSysErr;
+  if (strEQ(name, "PvmDataDefault"))    return PvmDataDefault;
+  if (strEQ(name, "PvmDataFoo"))        return PvmDataFoo;
+  if (strEQ(name, "PvmDataInPlace"))    return PvmDataInPlace;
+  if (strEQ(name, "PvmDataRaw"))        return PvmDataRaw;
+  if (strEQ(name, "PvmDebugMask"))      return PvmDebugMask;
+  if (strEQ(name, "PvmDontRoute"))      return PvmDontRoute;
+  if (strEQ(name, "PvmDupEntry"))       return PvmDupEntry;
+  if (strEQ(name, "PvmDupGroup"))       return PvmDupGroup;
+  if (strEQ(name, "PvmDupHost"))        return PvmDupHost;
+  if (strEQ(name, "PvmFragSize"))       return PvmFragSize;
+  if (strEQ(name, "PvmHostAdd"))        return PvmHostAdd;
+  if (strEQ(name, "PvmHostCompl"))      return PvmHostCompl;
+  if (strEQ(name, "PvmHostDelete"))     return PvmHostDelete;
+  if (strEQ(name, "PvmHostFail"))       return PvmHostFail;
+  if (strEQ(name, "PvmMismatch"))       return PvmMismatch;
+  if (strEQ(name, "PvmMppFront"))       return PvmMppFront;
+  if (strEQ(name, "PvmNoBuf"))          return PvmNoBuf;
+  if (strEQ(name, "PvmNoData"))         return PvmNoData;
+  if (strEQ(name, "PvmNoEntry"))        return PvmNoEntry;
+  if (strEQ(name, "PvmNoFile"))         return PvmNoFile;
+  if (strEQ(name, "PvmNoGroup"))        return PvmNoGroup;
+  if (strEQ(name, "PvmNoHost"))         return PvmNoHost;
+  if (strEQ(name, "PvmNoInst"))         return PvmNoInst;
+  if (strEQ(name, "PvmNoMem"))          return PvmNoMem;
+  if (strEQ(name, "PvmNoParent"))       return PvmNoParent;
+  if (strEQ(name, "PvmNoSuchBuf"))      return PvmNoSuchBuf;
+  if (strEQ(name, "PvmNoTask"))         return PvmNoTask;
+  if (strEQ(name, "PvmNotImpl"))        return PvmNotImpl;
+  if (strEQ(name, "PvmNotInGroup"))     return PvmNotInGroup;
+  if (strEQ(name, "PvmNullGroup"))      return PvmNullGroup;
+  if (strEQ(name, "PvmOk"))             return PvmOk;
+  if (strEQ(name, "PvmOutOfRes"))       return PvmOutOfRes;
+  if (strEQ(name, "PvmOutputCode"))     return PvmOutputCode;
+  if (strEQ(name, "PvmOutputTid"))      return PvmOutputTid;
+  if (strEQ(name, "PvmOverflow"))       return PvmOverflow;
+  if (strEQ(name, "PvmPollConstant"))   return PvmPollConstant;
+  if (strEQ(name, "PvmPollSleep"))      return PvmPollSleep;
+  if (strEQ(name, "PvmPollTime"))       return PvmPollTime;
+  if (strEQ(name, "PvmPollType"))       return PvmPollType;
+  if (strEQ(name, "PvmResvTids"))       return PvmResvTids;
+  if (strEQ(name, "PvmRoute"))          return PvmRoute;
+  if (strEQ(name, "PvmRouteDirect"))    return PvmRouteDirect;
+  if (strEQ(name, "PvmSelfOutputCode")) return PvmSelfOutputCode;
+  if (strEQ(name, "PvmSelfOutputTid"))  return PvmSelfOutputTid;
+  if (strEQ(name, "PvmSelfTraceCode"))  return PvmSelfTraceCode;
+  if (strEQ(name, "PvmSelfTraceTid"))   return PvmSelfTraceTid;
+  if (strEQ(name, "PvmShowTids"))       return PvmShowTids;
+  if (strEQ(name, "PvmSysErr"))         return PvmSysErr;
+  if (strEQ(name, "PvmTaskArch"))       return PvmTaskArch;
+  if (strEQ(name, "PvmTaskChild"))      return PvmTaskChild;
+  if (strEQ(name, "PvmTaskDebug"))      return PvmTaskDebug;
+  if (strEQ(name, "PvmTaskDefault"))    return PvmTaskDefault;
+  if (strEQ(name, "PvmTaskExit"))       return PvmTaskExit;
+  if (strEQ(name, "PvmTaskHost"))       return PvmTaskHost;
+  if (strEQ(name, "PvmTaskSelf"))       return PvmTaskSelf;
+  if (strEQ(name, "PvmTaskTrace"))      return PvmTaskTrace;
+  if (strEQ(name, "PvmTraceCode"))      return PvmTraceCode;
+  if (strEQ(name, "PvmTraceTid"))       return PvmTraceTid;
+  errno = EINVAL;
+  return 0;
 
-not_there:
-    errno = ENOENT;
-    return 0;
+ not_there:
+  errno = ENOENT;
+  return 0;
 }
 
 
 MODULE = Parallel::Pvm		PACKAGE = Parallel::Pvm		
 
-
 double
 constant(name,arg)
 	char *		name
 	int		arg
+
+PROTOTYPES: ENABLE
 
 void
 spawn(task,ntask,flag=PvmTaskDefault,where="",argvRef=0)
@@ -675,7 +202,6 @@ spawn(task,ntask,flag=PvmTaskDefault,where="",argvRef=0)
   int     flag
   char *  where
   SV *    argvRef
-  PROTOTYPE: $$;$$$
   PREINIT:
   int tids[MAXPROCS];
   int info;
@@ -713,58 +239,78 @@ spawn(task,ntask,flag=PvmTaskDefault,where="",argvRef=0)
     XPUSHs(sv_2mortal(newSViv(tids[i])));
   }
 
+MODULE = Parallel::Pvm		PACKAGE = Parallel::Pvm		PREFIX=pvm_
 
 int
-initsend(flag=PvmDataDefault)
-  int flag;
-  PROTOTYPE: ;$
+start_pvmd(block=0,...)
+  int block;
+  PROTOTYPE: ;$@
+  PREINIT:
+  int i;
+  char *argv[MAXARGS];
   CODE:
-  RETVAL = pvm_initsend(flag);
+  if ( items > 1 ) 
+  {
+    if ( items > MAXARGS )
+      croak("Warning: too many arguments.  Try increasing MAXARGS");
+    for(i=1;i<items;i++)
+      argv[i-1] = (char *)SvPV(ST(i), PL_na); 
+    RETVAL = pvm_start_pvmd(items - 1, argv, block);
+  } 
+  else 
+  {
+    RETVAL = pvm_start_pvmd(0, NULL, block);
+  }
   OUTPUT:
   RETVAL
+ 
+int
+pvm_initsend(flag=PvmDataDefault)
+  int flag;
 
 int
-send(tid,tag)
+pvm_send(tid,tag)
   int tid
   int tag
-  PROTOTYPE: $$
-  CODE:
-  RETVAL = pvm_send(tid,tag);
-  OUTPUT:
-  RETVAL
-
 
 int
 psend(tid,tag,...)
   int   tid
   int  tag
-  PROTOTYPE: $$;@
   PREINIT:
   int i;
   char *str, *po;
+  char *buf, *in;
+  STRLEN buflen = 0;
   CODE:
-  if ( items == 2 )
+  if ( items <= 2 )
      croak("Usage: Parallel::Pvm::psend(@argv)");
   for(i=2;i<items;i++)
   {
-    po = (char *)SvPV(ST(i), PL_na);
-    if ( i == 2 ) 
-    {
-      str = buffer_string(po,1);
-    } 
-    else
-    {
-      str = buffer_string(po,0);
-    }
+    STRLEN len;
+    po = (char *)SvPV(ST(i), len);
+    buflen += len + 1;
   }
-  RETVAL = pvm_psend(tid,tag,str,string_byte_cnt(str),PVM_BYTE);
+  New(2401, buf, buflen, char);
+  in = buf;
+  for(i=2;i<items;i++)
+  {
+    STRLEN len; int j;
+    po = (char *)SvPV(ST(i), len);
+    for (j=0;j<len;j++) 
+      *(in++) = *(po++);
+    *(in++) = '\v';
+  }
+  *(--in) = '\0';               /* we are sure that items > 2 and
+                                   therefore in > buf */
+  RETVAL = pvm_psend(tid,tag,buf,buflen,PVM_BYTE);
+  Safefree(buf);
   OUTPUT:
   RETVAL
 
 
 int
 mcast(...)
-  PROTOTYPE: @
   PREINIT:
   int i;
   int tag_num;
@@ -786,48 +332,24 @@ mcast(...)
 
 
 int
-sendsig(tid,sig)
-  int   tid
-  int  sig
-  PROTOTYPE: $$
-  CODE:
-  RETVAL = pvm_sendsig(tid,sig);
-  OUTPUT:
-  RETVAL
-  
-  
-int
-probe(tid=-1,tag=-1)
-  int   tid
-  int  tag
-  PROTOTYPE: ;$$
-  CODE:
-  RETVAL = pvm_probe(tid,tag);
-  OUTPUT:
-  RETVAL
-
+pvm_sendsig(tid,sig)
+  int	tid
+  int	sig
 
 int
-recv(tid=-1,tag=-1)
-  int tid
-  int tag
-  PROTOTYPE: ;$$
-  CODE:
-  RETVAL = pvm_recv(tid,tag);
-  OUTPUT:
-  RETVAL
-
+pvm_probe(tid=-1,tag=-1)
+  int	tid
+  int	tag
 
 int
-nrecv(tid=-1,tag=-1)
-  int  tid
-  int   tag
-  PROTOTYPE: ;$$
-  CODE:
-  RETVAL = pvm_nrecv(tid,tag);
-  OUTPUT:
-  RETVAL
+pvm_recv(tid=-1,tag=-1)
+  int	tid
+  int	tag
 
+int
+pvm_nrecv(tid=-1,tag=-1)
+  int	tid
+  int	tag
 
 int
 trecv(tid=-1,tag=-1,sec=1,usec=0)
@@ -835,7 +357,6 @@ trecv(tid=-1,tag=-1,sec=1,usec=0)
   int  tag
   int  sec
   int  usec
-  PROTOTYPE: ;$$$$
   PREINIT:
   struct timeval tmout;
   CODE:
@@ -847,21 +368,23 @@ trecv(tid=-1,tag=-1,sec=1,usec=0)
   
   
 void
-precv(tid=-1,tag=-1)
+precv(tid=-1,tag=-1,buflen=MAXSTR)
   int   tid
   int   tag
-  PROTOTYPE: ;$$
+  int   buflen
   PREINIT:
   int info, src, stag, scnt;
-  char str[MAXSTR];
+  char *buf;
   char *po;
   int type;
   PPCODE:
-  info = pvm_precv(tid,tag,str,MAXSTR,PVM_BYTE,&src,&stag,&scnt);
+  New(2401, buf, buflen, char);
+
+  info = pvm_precv(tid,tag,buf,buflen,PVM_BYTE,&src,&stag,&scnt);
   XPUSHs(sv_2mortal(newSViv(info)));
   XPUSHs(sv_2mortal(newSViv(src)));
   XPUSHs(sv_2mortal(newSViv(stag)));
-  po = strtok(str,"\v");
+  po = strtok(buf,"\v");
   while ( po != NULL )
   {
 	/* Change: Everything is a string 
@@ -869,61 +392,68 @@ precv(tid=-1,tag=-1)
     XPUSHs(sv_2mortal(newSVpv(po,0)));
     po = strtok(NULL,"\v");
   }
+  Safefree(buf);
 
 
 int
-parent()
-  PROTOTYPE:
-  CODE:
-  RETVAL = pvm_parent();
-  OUTPUT:
-  RETVAL
-
+pvm_parent()
 
 int
-mytid()
-  PROTOTYPE:
-  CODE:
-  RETVAL = pvm_mytid();
-  OUTPUT:
-  RETVAL
-
+pvm_mytid()
 
 int
 pack(...)
-  PROTOTYPE: @
   PREINIT:
   int i;
   char *str, *po;
+  char *buf, *in;
+  STRLEN buflen = 0;
+
   CODE:
   if ( items <= 0 )
     croak("Usage: Parallel::Pvm::pack(@argv)");
-  for (i=0;i<items;i++)
+
+  for(i=0;i<items;i++)
   {
-    po = (char *)SvPV(ST(i), PL_na);
-    if ( i == 0 ) 
-    {
-      str = buffer_string(po,1);
-    } 
-    else
-    {
-      str = buffer_string(po,0);
-    }
+    STRLEN len;
+    po = (char *)SvPV(ST(i), len);
+    buflen += len + 1;
   }
-  RETVAL = pvm_pkstr(str); 
+  New(2401, buf, buflen, char);
+  in = buf;
+
+  for(i=0;i<items;i++)
+  {
+    STRLEN len; int j;
+    po = (char *)SvPV(ST(i), len);
+    for (j=0;j<len;j++) 
+      *(in++) = *(po++);
+    *(in++) = '\v';
+  }
+  *(--in) = '\0';               /* we are sure that items > 0 and
+                                   therefore in > buf */
+  RETVAL = pvm_pkstr(buf); 
+  Safefree(buf);
   OUTPUT:
   RETVAL
 
 
 void
-unpack()
-  PROTOTYPE:
+unpack(buflen=MAXSTR)
+  int   buflen
   PREINIT:
-  char str[MAXSTR], *po;
+  char *buf, *po;
   int type;
   PPCODE:
-  pvm_upkstr(str); 
-  po = strtok(str,"\v");
+  New(2401, buf, buflen, char);
+  if (pvm_upkstr(buf) != 0) {
+    if (PL_dowarn) {
+      warn("pvm_upkstr failed");
+      Safefree(buf);
+      XSRETURN_UNDEF;
+    }
+  }
+  po = strtok(buf,"\v");
   while ( po != NULL )
   {
 	/* Change: Everything is a string 
@@ -931,40 +461,21 @@ unpack()
     XPUSHs(sv_2mortal(newSVpv(po,0)));
     po = strtok(NULL,"\v");
   }
-
-
-int
-exit()
-  PROTOTYPE:
-  CODE:
-  RETVAL = pvm_exit();
-  OUTPUT:
-  RETVAL
-
+  Safefree(buf);
 
 int
-halt()
-  PROTOTYPE:
-  CODE:
-  RETVAL = pvm_halt();
-  OUTPUT:
-  RETVAL
-
+pvm_exit()
 
 int
-catchout(io=stdout)
-  FILE *  io
-  PROTOTYPE: ;$
-  CODE:
-  RETVAL = pvm_catchout(io);
-  OUTPUT:
-  RETVAL
+pvm_halt()
 
+int
+pvm_catchout(io=stdout)
+  FILE *	io
 
 void
 tasks(where=0)
   int  where
-  PROTOTYPE: ;$
   PREINIT:
   int ntask,i,info;
   struct pvmtaskinfo *taskp;
@@ -993,13 +504,12 @@ tasks(where=0)
       hv_store(hv_tmp,"ti_host",7,newSViv(ti_host),0);
       hv_store(hv_tmp,"ti_flag",7,newSViv(ti_flag),0);
       /* create reference and stick in on the stack */
-      XPUSHs(sv_2mortal(newRV((SV *)hv_tmp)));
+      XPUSHs(sv_2mortal(newRV_noinc((SV *)hv_tmp)));
     }
 
 
 void
 config()
-  PROTOTYPE:
   PREINIT:
   int nhosts, narch, info;
   struct pvmhostinfo *hostp;
@@ -1024,13 +534,12 @@ config()
     hv_store(hv_tmp,"hi_arch",7,newSVpv(hi_arch,0),0);
     hv_store(hv_tmp,"hi_speed",8,newSViv(hi_speed),0);
     /* create reference and stick in on the stack */
-    XPUSHs(sv_2mortal(newRV((SV *)hv_tmp)));
+    XPUSHs(sv_2mortal(newRV_noinc((SV *)hv_tmp)));
   }
 
 
 void
 addhosts(...)
-  PROTOTYPE: @
   PREINIT:
   int i;
   int info;
@@ -1054,7 +563,6 @@ addhosts(...)
 
 void
 delhosts(...)
-  PROTOTYPE: @
   PREINIT:
   char *po;
   char *hosts[MAXHOSTS]; 
@@ -1073,22 +581,19 @@ delhosts(...)
   {
     XPUSHs(sv_2mortal(newSViv(infos[i])));
   }
-  /*
-  for (i=0;i<items;i++)
-  {
-    free(hosts[i]);
-  }
-  */
-
 
 void
 bufinfo(bufid)
   int  bufid
-  PROTOTYPE: $
   PREINIT:
   int bytes, tag, tid, info;
   PPCODE:
-  info = pvm_bufinfo(bufid,&bytes,&tag,&tid);
+  if (info = pvm_bufinfo(bufid,&bytes,&tag,&tid)) {
+    if (PL_dowarn) {
+      warn("pvm_bufinfo failed");
+      XSRETURN_EMPTY;
+    }
+  }
   XPUSHs(sv_2mortal(newSViv(info)));
   XPUSHs(sv_2mortal(newSViv(bytes)));
   XPUSHs(sv_2mortal(newSViv(tag)));
@@ -1096,144 +601,60 @@ bufinfo(bufid)
 
   
 int
-freebuf(bufid)
-  int  bufid
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_freebuf(bufid);
-  OUTPUT:
-  RETVAL
-
+pvm_freebuf(bufid)
+  int	bufid
 
 int
-getrbuf()
-  PROTOTYPE: 
-  CODE:
-  RETVAL = pvm_getrbuf();
-  OUTPUT:
-  RETVAL
-
+pvm_getrbuf()
 
 int
-getsbuf()
-  PROTOTYPE:
-  CODE:
-  RETVAL = pvm_getsbuf();
-  OUTPUT:
-  RETVAL
-
+pvm_getsbuf()
 
 int
-mkbuf(encode=PvmDataDefault)
-  int  encode
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_mkbuf(encode);
-  OUTPUT:
-  RETVAL
-
+pvm_mkbuf(encode=PvmDataDefault)
+  int	encode
 
 int
-setrbuf(bufid)
+pvm_setrbuf(bufid)
   int   bufid
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_setrbuf(bufid);
-  OUTPUT:
-  RETVAL
-
 
 int
-setsbuf(bufid)
-  int  bufid
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_setsbuf(bufid);
-  OUTPUT:
-  RETVAL
-
+pvm_setsbuf(bufid)
+  int	bufid
 
 int
-kill(tid)
-  int  tid
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_kill(tid);
-  OUTPUT:
-  RETVAL
+pvm_kill(tid)
+  int	tid
 
 int
-mstat(host)
-  char *  host
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_mstat(host);
-  OUTPUT:
-  RETVAL
-
+pvm_mstat(host)
+  char *	host
 
 int
-pstat(tid)
-  int tid
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_pstat(tid);
-  OUTPUT:
-  RETVAL
-
+pvm_pstat(tid)
+  int	tid
 
 int
-tidtohost(tid)
-  int  tid
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_tidtohost(tid);
-  OUTPUT:
-  RETVAL
-
+pvm_tidtohost(tid)
+  int	tid
 
 int
-getopt(what)
-  int   what
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_getopt(what);
-  OUTPUT:
-  RETVAL
-
+pvm_getopt(what)
+  int	what
 
 int
-setopt(what,val)
-  int   what
-  int  val
-  PROTOTYPE: $$
-  CODE:
-  RETVAL = pvm_setopt(what,val);
-  OUTPUT:
-  RETVAL
-
+pvm_setopt(what,val)
+  int	what
+  int	val
 
 int
-reg_hoster()
-  PROTOTYPE: 
-  CODE:
-  RETVAL = pvm_reg_hoster();
-  OUTPUT:
-  RETVAL
-
+pvm_reg_hoster()
 
 int
-reg_tasker()
-  PROTOTYPE:
-  CODE:
-  RETVAL = pvm_reg_tasker();
-  OUTPUT:
-  RETVAL
-
+pvm_reg_tasker()
 
 int
-reg_rm()
-  PROTOTYPE: 
+pvm_reg_rm()
   PREINIT:
   struct pvmhostinfo *hip;
   CODE:
@@ -1242,20 +663,13 @@ reg_rm()
   RETVAL
 
 int
-perror(msg)
-  char *   msg
-  PROTOTYPE: $
-  CODE:
-  RETVAL = pvm_perror(msg);
-  OUTPUT:
-  RETVAL
-
+pvm_perror(msg)
+  char *	msg
 
 int
 notify(what,tag,...)
   int     what
   int     tag
-  PROTOTYPE: $$;@
   PREINIT:
   int i, cnt, tids[MAXPROCS];
   CODE:
@@ -1287,7 +701,6 @@ notify(what,tag,...)
 int
 recv_notify(what)
   int what
-  PROTOTYPE: $
   PREINIT:
   int id,i,cnt;
   int tids[MAXPROCS];
@@ -1326,7 +739,7 @@ hostsync(hst)
   hv_store(hv_tmp,"tv_sec",6,newSViv(sec),0);
   hv_store(hv_tmp,"hi_usec",7,newSViv(usec),0);
   /* create reference and stick in on the stack */
-  XPUSHs(sv_2mortal(newRV((SV *)hv_tmp)));
+  XPUSHs(sv_2mortal(newRV_noinc((SV *)hv_tmp)));
   sec = delta.tv_sec;
   usec = delta.tv_usec;
   /* set up hash entry */
@@ -1334,13 +747,12 @@ hostsync(hst)
   hv_store(hv_tmp,"tv_sec",6,newSViv(sec),0);
   hv_store(hv_tmp,"hi_usec",7,newSViv(usec),0);
   /* create reference and stick in on the stack */
-  XPUSHs(sv_2mortal(newRV((SV *)hv_tmp)));
+  XPUSHs(sv_2mortal(newRV_noinc((SV *)hv_tmp)));
 
 
 void
 recvf(fn)
   SV *	fn
-  PROTOTYPE: $
   CODE:
   if ( recvf_callback == (SV *)NULL )
   {
@@ -1355,13 +767,52 @@ recvf(fn)
 
 void
 recvf_old()
-  PROTOTYPE: 
   CODE:
   if ( olmatch !=  NULL )
   {
     pvm_recvf(olmatch);
   }
 
+int
+pvm_joingroup(group)
+     char *	group
 
+int
+pvm_lvgroup(group)
+     char *	group
 
-	
+int
+pvm_bcast(group, msgtag)
+     char *	group
+     int	msgtag
+
+int
+pvm_freezegroup(group, size=-1)
+     char *	group
+     int	size
+
+int
+pvm_barrier(group, count)
+     char *	group
+     int	count
+
+int
+pvm_getinst(group, tid)
+     char *	group
+     int	tid
+
+int
+pvm_gettid(group, inum)
+     char *	group
+     int	inum
+
+int
+pvm_gsize(group)
+     char *	group
+
+void
+endtask()
+     PROTOTYPE:
+     CODE:
+     pvmendtask();
+

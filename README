@@ -1,24 +1,21 @@
-Copyright (c) 1996 Edward Walker (c) 2000,2001 Denis Leconte. 
-All rights reserved.
-This program is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+NEWS
+----
 
+1.3.0 is a completely user-contributed release! 
 
-A note from Denis Leconte:
+Large parts of Parallel::Pvm were rewritten by Ulrich Pfeifer,
+while preserving the original API. (And a great job he did!)
+- unpack() now accepts an extra parameter for the size of the
+  message, removing the previous 100.000 char limit.
+- The pvm group functions are now implemented.
+- Memory leaks in the config(), tasks() and hostsync() functions 
+  were fixed.
+- There is now also a very nice setup for test scripts - they
+  reside in the "t" directory. 
+This work was sponsored by Neopoly AG.
 
-We have not been able to get a hold of Edward Walker
-in the past year or so. For this reason, the CPAN administrators
-have handed me the curator duties for Parallel::Pvm.
-
-This is just a touch-up so that the module will
-compile and install under Perl 5.005 and up.
-
-Denis Leconte
-Email: denis_leconte@geocities.com
-WWW: http://www.geocities.com/denis_leconte
-
-Many thanks to Sven Neuhaus for the patch!
-
+Benjamin Holzman contributed support for the pmv_start_pvmd()
+API call.
 
 PERL-PVM
 --------
@@ -26,7 +23,7 @@ PERL-PVM
 This is a perl extension for the parallel virtual machine
 (PVM) message-passing system.   Before you begin installation
 you must have already installed PVM (the most recent version of
-PVM may be found at http://www.epm.ornl.gov/pvm).
+PVM may be found at http://www.csm.ornl.gov/pvm/).
 
 You must also set the environment variables
 
@@ -39,8 +36,8 @@ or greater.
 Once all the preliminaries have been done, the installation
 sequence is as follows:
 
-        tar xvf Parallel-Pvm-1.2.2.tar
-        cd Parallel-Pvm-1.2.2
+        tar xvf Parallel-Pvm-1.3.0.tar
+        cd Parallel-Pvm-1.3.0
 
 Have a look into Makefile.PL to see if you have to make any
 changes.  Afterwhich do
@@ -58,7 +55,21 @@ Any questions, critisims or suggestions are welcome.
 
 - eddie
 
+Copyright (c) 1996 Edward Walker (c) 2000,2001 Denis Leconte. 
+All rights reserved.
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
 -------------------------------------------------------------
+
+Current maintainer:
+
+Denis Leconte
+Email: denis_leconte@geocities.com
+WWW: http://www.geocities.com/denis_leconte
+
+
+Original author:
+
 Dr Edward Walker
 National Supercomputing Research Centre
 81, Science Park Drive
@@ -66,3 +77,4 @@ Singapore 0511
 
 Email: edward@nsrc.nus.sg
 WWW: http://www.nsrc.nus.sg/STAFF/edward
+

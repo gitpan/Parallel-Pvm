@@ -1,17 +1,28 @@
+#!perl -w
+#                              -*- Mode: Perl -*- 
+# $Basename$
+# $Revision$
+# Last Modified By: Ulrich Pfeifer
+# Last Modified On: Sun Feb 25 10:25:48 2001
+
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+
+my @args;
+my @libs = qw(-lpvm3 -lgpvm3);
+if ($ENV{PVM_ROOT}) {
+  # This should be the case, but is not necessary on Debian systems
+  push @args, ('INC'       => '-I$(PVM_ROOT)/include');
+  unshift @libs, "-L$ENV{PVM_ROOT}/lib/$ENV{PVM_ARCH}";
+}
+if ($^O eq "solaris") {
+  push @libs, qw(-lsocket -lnsl);
+}
+push @args, ('LIBS', "@libs");
+
 WriteMakefile
-(
-    'NAME'	=> 'Parallel::Pvm',
-    'VERSION_FROM' => 'Pvm.pm', # finds $VERSION
-    'LIBS'	=> [''],   # e.g., '-lm' 
-    'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
-    'INC'	=> '',     # e.g., '-I/usr/include/other' 
-    'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
-    'INC'	=> '-I$(PVM_ROOT)/include', 
-    'MYEXTLIB'  => '$(PVM_ROOT)/lib/$(PVM_ARCH)/libpvm3.a',
-# for Solaris you may have to uncomment the line below
-#    'LIBS'	=> "-lsocket -lnsl",
-    'dist' => {COMPRESS => "gzip", SUFFIX => "gz"},
+  (
+   'NAME'	  => 'Parallel::Pvm',
+   'VERSION_FROM' => 'Pvm.pm',
+   'dist'         => {COMPRESS => "gzip", SUFFIX => "gz"},
+   @args
 );
