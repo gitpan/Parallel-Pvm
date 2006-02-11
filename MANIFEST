@@ -1,8 +1,0 @@
-MANIFEST
-Makefile.PL
-Pvm.pm
-Pvm.xs
-t/bigmsg.t
-ChangeLog
-t/group.t
-README
